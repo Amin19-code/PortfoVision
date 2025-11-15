@@ -10,13 +10,25 @@ import httpx
 from enum import Enum
 import os
 from openai import OpenAI
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = FastAPI(title="PortfoVision API")
 
-# CORS middleware
+# CORS middleware - configurable via environment variable
+# Get allowed origins from environment variable, default to localhost for development
+ALLOWED_ORIGINS_STR = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000"  # Default for development
+)
+# Split comma-separated origins and strip whitespace
+ALLOWED_ORIGINS = [origin.strip() for origin in ALLOWED_ORIGINS_STR.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

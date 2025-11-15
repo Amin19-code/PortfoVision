@@ -1,179 +1,136 @@
 # PortfoVision
 
-A full-stack web application for analyzing and comparing stock portfolio performance built with Next.js and FastAPI.
+A portfolio analysis tool I built to track and compare stock performance. It's a full-stack app with a Next.js frontend and FastAPI backend that lets you create custom portfolios, see how they perform over time, and compare them against major market indices.
 
-## Features
+## What It Does
 
-- ✅ Create and edit stock portfolios with custom tickers and weights
-- ✅ Compare portfolio performance over 1 year and 5 years
-- ✅ Compare with S&P 500, NASDAQ, and Dow Jones indices
-- ✅ Interactive charts showing portfolio growth using daily prices
-- ✅ Support for stocks from TSX, NYSE, and NASDAQ
-- ✅ Currency selection (USD/CAD) with live FX conversion
-- ✅ Display total and individual returns, volatility, and drawdowns
-- ✅ Modern UI with TailwindCSS and Recharts
+I wanted something that would let me quickly analyze different portfolio combinations and see how they stack up. So I built this tool that:
 
-## Project Structure
+- Lets you build custom portfolios with any stocks you want and assign weights
+- Shows performance over 1, 5, or 10 year periods
+- Compares your portfolio against S&P 500, NASDAQ, and Dow Jones
+- Displays everything with interactive charts that update in real-time
+- Supports stocks from NYSE, NASDAQ, and TSX (Canadian stocks)
+- Handles currency conversion between USD and CAD on the fly
+- Shows key metrics like returns, volatility, and drawdowns
+- Has AI-powered recommendations (optional - works without it too)
 
-```
-PortfoVision-1/
-├── app/                 # Next.js frontend
-│   ├── globals.css      # Global styles
-│   ├── layout.tsx       # Root layout
-│   └── page.tsx         # Main page
-├── components/          # React components
-│   ├── PortfolioManager.tsx
-│   ├── PerformanceComparison.tsx
-│   └── CurrencySelector.tsx
-├── api/                 # FastAPI backend
-│   ├── main.py          # API endpoints
-│   ├── requirements.txt # Python dependencies
-│   └── run.sh           # Backend startup script
-├── package.json         # Node.js dependencies
-└── README.md
-```
+## Getting Started
 
-## Setup Instructions
+### Prerequisites
 
-### Backend (FastAPI)
+You'll need Node.js and Python installed. If you don't have them yet, grab Node.js from [nodejs.org](https://nodejs.org) and Python from [python.org](https://www.python.org).
 
-1. Navigate to the API directory:
+### Backend Setup
+
+First, let's get the API running:
 
 ```bash
 cd api
-```
-
-2. Create a virtual environment (recommended):
-
-```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
-
-```bash
 pip install -r requirements.txt
 ```
 
-4. Run the backend server:
+Once that's done, start the server:
 
 ```bash
-# Option 1: Using the run script
-chmod +x run.sh
-./run.sh
-
-# Option 2: Directly with Python
-python main.py
-
-# Option 3: Using uvicorn directly
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-The API will be available at `http://localhost:8000`
+Or if you want to use the run script:
 
-### Frontend (Next.js)
+```bash
+chmod +x run.sh
+./run.sh
+```
 
-1. Install dependencies:
+The API will be running at `http://localhost:8000`. You can check out the interactive API docs at `http://localhost:8000/docs` - it's pretty handy for testing endpoints.
+
+### Frontend Setup
+
+Open a new terminal and from the project root:
 
 ```bash
 npm install
-```
-
-2. (Optional) Create a `.env.local` file to configure the API URL:
-
-```bash
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
-3. Run the development server:
-
-```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:3000`
+That's it! Open `http://localhost:3000` in your browser. The main portfolio page is at `/portfolio`.
 
-## Usage
+### Environment Variables (Optional)
 
-1. **Add Stocks**: Select an exchange (NYSE, NASDAQ, or TSX), enter a ticker symbol, and specify the weight percentage.
+If you want to customize things, you can set up environment variables. First, copy the example files:
 
-2. **Select Timeframe**: Choose between 1 year or 5 years for performance analysis.
+```bash
+cp api/.env.example api/.env
+cp .env.example .env.local
+```
 
-3. **Select Currency**: Choose USD or CAD to view performance in your preferred currency.
+For the backend, you can add an OpenAI API key if you want AI recommendations (it works fine without it - just uses rule-based analysis instead). You can also configure which domains are allowed to access the API.
 
-4. **View Performance**: See your portfolio's performance metrics, compare with indices, and view individual stock returns.
+For the frontend, you only need to set the API URL if your backend isn't running on `localhost:8000`.
 
-5. **Interactive Charts**: Toggle which indices to compare with using the checkboxes.
+Check out [SECURITY.md](SECURITY.md) for more details on keeping things secure.
+
+## How to Use It
+
+It's pretty straightforward:
+
+1. Go to the `/portfolio` page
+2. Enter your stock tickers (comma-separated, like `AAPL, MSFT, GOOGL`)
+3. Enter the weights for each stock (also comma-separated, like `0.4, 0.4, 0.2`)
+4. Pick your time period (1 year, 5 years, or 10 years)
+5. Choose your currency (USD or CAD)
+6. Hit "Calculate Portfolio" and see the results
+
+The app will show you charts comparing your portfolio to the major indices, plus metrics like cumulative return, volatility, and maximum drawdown. There's also a section that shows what your portfolio would be worth if you'd invested 5 years ago.
 
 ## API Endpoints
 
-### Portfolio & Performance
+The backend exposes a few endpoints if you want to integrate this into something else:
 
-- `POST /api/portfolio` - Calculate portfolio performance from tickers and weights
-  - Accepts: `tickers` (list), `weights` (list), `period` ('1y' or '5y')
-  - Returns: Performance metrics (return, volatility, drawdown) and time series
-  - Example: `POST /api/portfolio` with `{"tickers": ["AAPL", "MSFT"], "weights": [0.6, 0.4], "period": "1y"}`
-- `POST /api/portfolio/calculate` - Calculate portfolio performance (legacy endpoint)
-- `GET /api/indices/{index_name}` - Get index data (SP500, NASDAQ, DOW)
-- `GET /api/stock/{ticker}` - Get stock information
-- `GET /api/fx-rate` - Get FX conversion rate
+- `POST /api/portfolio` - Calculate portfolio performance. Send it tickers, weights, and a period, and it returns performance metrics and a time series.
+- `GET /api/data` - Get historical data for a specific stock or index
+- `GET /api/data/batch` - Get historical data for multiple tickers at once
+- `POST /ai/recommend` - Get stock recommendations (AI-powered if you have an API key, otherwise rule-based)
 
-### Historical Data
+There's more detailed API documentation in `api/API_DOCUMENTATION.md` if you need it.
 
-- `GET /api/data` - Fetch historical stock or index data
+## Deployment
 
-  - Parameters:
-    - `ticker` (required): Stock ticker (e.g., AAPL, MSFT, RY.TO) or index (SP500, NASDAQ, DOW, ^GSPC, ^IXIC, ^DJI)
-    - `period` (optional): Time period - `1y`, `5y`, or `10y` (default: `1y`)
-  - Returns: Daily historical data with adjusted close prices, daily returns (%), and cumulative performance (%)
-  - Example: `GET /api/data?ticker=AAPL&period=5y`
+Want to put this online? I've written up deployment instructions in [DEPLOYMENT.md](DEPLOYMENT.md).
 
-- `GET /api/data/batch` - Fetch historical data for multiple tickers
-  - Parameters:
-    - `tickers` (required): Comma-separated list of tickers (e.g., AAPL,MSFT,RY.TO)
-    - `period` (optional): Time period - `1y`, `5y`, or `10y` (default: `1y`)
-  - Returns: Dictionary with ticker as key and historical data as value
-  - Example: `GET /api/data/batch?tickers=AAPL,MSFT,SP500&period=1y`
+The short version: I'd deploy the frontend to Vercel (they're great for Next.js apps) and the backend to Railway or Render. Both have free tiers that should be plenty to get started. The deployment guide has step-by-step instructions if you need them.
 
-### AI Recommendations
+## Tech Stack
 
-- `POST /ai/recommend` - Get AI-powered stock recommendations
-  - Request Body:
-    ```json
-    {
-      "tickers": ["AAPL", "MSFT", "GOOGL"]
-    }
-    ```
-  - Returns: Plain-English recommendations for each stock based on historical performance and fundamentals
-  - Example: `POST /ai/recommend` with `{"tickers": ["AAPL", "MSFT"]}`
-  - Note: Requires `OPENAI_API_KEY` environment variable for AI-powered insights. Falls back to rule-based analysis if not available.
+**Frontend:**
 
-## Technologies Used
+- Next.js 14 (React framework)
+- TypeScript
+- TailwindCSS for styling
+- Recharts for data visualization
 
-- **Frontend**: Next.js 14, React, TypeScript, TailwindCSS, Recharts
-- **Backend**: FastAPI, Python, yfinance, pandas, numpy
-- **Data Sources**: Yahoo Finance (via yfinance)
+**Backend:**
 
-## Environment Variables
+- FastAPI (Python web framework)
+- yfinance for stock data
+- pandas and numpy for data processing
 
-Create a `.env` file in the `api/` directory for optional configuration:
+All stock data comes from Yahoo Finance via the yfinance library.
 
-```bash
-# OpenAI API Key (optional - for AI-powered recommendations)
-OPENAI_API_KEY=your_openai_api_key_here
-```
+## A Few Notes
 
-**Note:** The AI recommendation feature works without an OpenAI API key using rule-based analysis. For enhanced AI-powered insights, add your OpenAI API key to the `.env` file.
+- TSX stocks can be entered with or without the `.TO` suffix - the app handles both
+- Portfolio weights get normalized automatically if they don't add up to 100%
+- Currency conversion uses live exchange rates
+- The AI recommendations are completely optional - the app works great without them
 
-## Notes
+## Security
 
-- Stock data is fetched from Yahoo Finance using the `yfinance` library
-- TSX stocks should be entered with or without the `.TO` suffix (automatically handled)
-- FX rates are fetched live from Yahoo Finance
-- Portfolio weights are automatically normalized if they exceed 100%
-- AI recommendations use OpenAI GPT-4o-mini model when API key is available, otherwise fall back to rule-based analysis
+Please don't commit `.env` files! The `.gitignore` is set up to exclude them, but double-check before pushing. See [SECURITY.md](SECURITY.md) for security best practices and more info.
 
 ## License
 
-MIT
+MIT - feel free to use this however you want.
